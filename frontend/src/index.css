@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  /* SVG noise data URI — feTurbulence fractalNoise, greyscale, opacity 0.04 */
+  /* Layered over a warm 3-stop diagonal gradient for subtle depth */
+  body {
+    @apply text-secondary-800 font-sans antialiased;
+    background-color: #f5f5f4; /* stone-100 fallback */
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+      linear-gradient(150deg, #fafaf9 0%, #f5f5f4 40%, #e7e5e4 100%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-secondary-900;
+  }
+}
+
+@layer components {
+  /* ── Buttons ─────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-primary-700 text-white hover:bg-primary-800 focus:ring-primary-600 active:bg-primary-900;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-secondary-700 border border-secondary-300 hover:bg-stone-50 focus:ring-primary-600;
+  }
+  .btn-danger {
+    @apply btn bg-red-700 text-white hover:bg-red-800 focus:ring-red-600;
+  }
+  .btn-ghost {
+    @apply btn text-secondary-600 hover:bg-stone-200 focus:ring-primary-600;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* ── Form elements ───────────────────────────── */
+  .input {
+    @apply block w-full px-3 py-2.5 rounded-lg border border-secondary-300 text-sm text-secondary-800 bg-white placeholder-secondary-400 transition focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600;
+  }
+  .input-error {
+    @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+  }
+  .label {
+    @apply block text-sm font-semibold text-secondary-700 mb-1;
+  }
+  .form-group {
+    @apply flex flex-col gap-1;
+  }
+  .error-text {
+    @apply text-xs text-red-600 mt-0.5;
+  }
+
+  /* ── Cards ───────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-xl border border-secondary-200 shadow-sm;
+  }
+  .card-header {
+    @apply px-6 py-4 border-b border-secondary-100;
+  }
+  .card-body {
+    @apply px-6 py-4;
+  }
+
+  /* ── Stat cards ──────────────────────────────── */
+  .stat-card {
+    @apply card p-5 flex items-start gap-4;
+  }
+  .stat-icon {
+    @apply w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0;
+  }
+
+  /* ── Badges / Status ─────────────────────────── */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide;
+  }
+  /* pending  → warm amber */
+  .badge-pending   { @apply badge bg-amber-100 text-amber-800 border border-amber-200; }
+  /* accepted → teal/green-ish industrial */
+  .badge-accepted  { @apply badge bg-secondary-100 text-secondary-700 border border-secondary-200; }
+  /* shipped  → primary amber */
+  .badge-shipped   { @apply badge bg-primary-100 text-primary-800 border border-primary-200; }
+  /* delivered → dark green */
+  .badge-delivered { @apply badge bg-emerald-100 text-emerald-800 border border-emerald-200; }
+  /* cancelled → muted red */
+  .badge-cancelled { @apply badge bg-red-100 text-red-800 border border-red-200; }
+
+  /* ── Tables ──────────────────────────────────── */
+  .table-wrap {
+    @apply overflow-x-auto rounded-xl border border-secondary-200;
+  }
+  .table {
+    @apply w-full text-sm text-left;
+  }
+  .table thead {
+    @apply bg-secondary-800 text-secondary-200 text-xs uppercase tracking-wider;
+  }
+  .table th {
+    @apply px-5 py-3 font-semibold;
+  }
+  .table td {
+    @apply px-5 py-3 border-t border-secondary-100 text-secondary-700;
+  }
+  .table tbody tr {
+    @apply hover:bg-stone-50 transition-colors;
+  }
+
+  /* ── Sidebar ─────────────────────────────────── */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-secondary-500 hover:bg-primary-50 hover:text-primary-700 transition-all duration-150;
+  }
+  .sidebar-link.active {
+    @apply bg-primary-100 text-primary-800 font-semibold;
+  }
+
+  /* ── Page layout ─────────────────────────────── */
+  .page-title {
+    @apply text-2xl font-bold text-secondary-900;
+  }
+  .page-subtitle {
+    @apply text-sm text-secondary-500 mt-0.5 font-normal;
+  }
+
+  /* ── Modal ───────────────────────────────────── */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-secondary-900/60 backdrop-blur-sm z-40 flex items-center justify-center p-4;
+  }
+  .modal {
+    @apply bg-white rounded-xl shadow-2xl w-full max-w-lg z-50 overflow-hidden border border-secondary-200;
+  }
+
+  /* ── Auth page background ─────────────────────── */
+  /* Same noise + gradient as body; applied to Login / Register wrappers */
+  .auth-bg {
+    background-color: #f5f5f4;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+      linear-gradient(160deg, #fafaf9 0%, #f5f5f4 45%, #e7e5e4 100%);
+  }
+}
