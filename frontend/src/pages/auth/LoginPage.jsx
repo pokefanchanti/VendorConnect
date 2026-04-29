@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
 import { authApi } from '../../api'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
-import { FormInput } from '../../components/ui'
-import Logo from '../../components/ui/Logo'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -35,75 +32,126 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-bg min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <Logo variant="auth" />
-          <p className="text-secondary-500 text-sm mt-4">Sign in to your account</p>
+    <div className="bg-[#faf9f6] min-h-screen font-body-md text-[#2b2826] flex items-center justify-center p-4 antialiased w-full relative overflow-hidden">
+      
+      {/* Decorative Blur Backgrounds matching dashboard */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#f4f3ec] rounded-full blur-3xl opacity-50 mix-blend-multiply"></div>
+      <div className="absolute -bottom-32 -right-32 w-[30rem] h-[30rem] bg-[#f9eee6] rounded-full blur-3xl opacity-50 mix-blend-multiply"></div>
+
+      <div className="w-full max-w-md relative z-10">
+        
+        {/* Header */}
+        <div className="text-center mb-10">
+          <Link to="/" className="inline-block mb-6">
+            <h1 className="font-h1 text-3xl font-bold tracking-tight text-[#2b2826]">
+              VendorConnect
+            </h1>
+          </Link>
+          <h2 className="font-h1 text-4xl text-[#2b2826] font-bold tracking-tight mb-3">
+            Welcome back
+          </h2>
+          <p className="text-lg text-[#2b2826]/60 font-medium">
+            Log in to continue sourcing.
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="card">
-          <div className="card-body">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
-                  {error}
+        {/* Form Card */}
+        <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#2b2826]/5 p-8 md:p-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {error && (
+              <div className="bg-[#fdebea] border border-[#93000a]/20 text-[#93000a] rounded-xl px-4 py-3 text-sm font-medium">
+                {error}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label htmlFor="email" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                  <span className="material-symbols-outlined text-xl">mail</span>
                 </div>
-              )}
-              <FormInput
-                id="email"
-                label="Email address"
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                required
-                autoComplete="email"
-              />
-              <div className="form-group">
-                <label htmlFor="password" className="label">Password</label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPw ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="Enter your password"
-                    required
-                    autoComplete="current-password"
-                    className="input pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    tabIndex={-1}
-                  >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="name@company.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="block w-full pl-12 pr-4 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                  <span className="material-symbols-outlined text-xl">lock</span>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPw ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="block w-full pl-12 pr-12 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                  <button type="button" onClick={() => setShowPw(!showPw)} className="text-[#2b2826]/40 hover:text-[#2b2826] transition-colors focus:outline-none">
+                    <span className="material-symbols-outlined text-xl">{showPw ? 'visibility_off' : 'visibility'}</span>
                   </button>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between px-2 pt-2">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 rounded-sm border-[#2b2826]/20 text-[#2b2826] focus:ring-[#2b2826] bg-[#faf9f6] transition-colors cursor-pointer"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm font-medium text-[#2b2826]/70 cursor-pointer">
+                  Remember me
+                </label>
+              </div>
+              <div className="text-sm">
+                <Link to="/forgot-password" className="font-bold text-[#2b2826]/70 hover:text-[#2b2826] transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+
+            <div className="pt-4">
               <button
                 type="submit"
-                className="btn-primary w-full btn-lg mt-2"
                 disabled={loading}
+                className="w-full flex justify-center items-center py-4 px-6 text-white font-bold bg-[#2b2826] hover:bg-black focus:ring-4 focus:ring-[#2b2826]/30 focus:outline-none rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
-                {loading ? 'Signing in…' : 'Sign In'}
+                {loading ? 'Signing in...' : 'Log in'}
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
 
-        <p className="text-center text-sm text-slate-500 mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-primary-600 font-medium hover:underline">
-            Create one
-          </Link>
-        </p>
+        <div className="mt-10 text-center">
+          <p className="text-[#2b2826]/60 font-medium">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-bold text-[#2b2826] hover:underline transition-all ml-1">
+              Create an account
+            </Link>
+          </p>
+        </div>
+        
       </div>
     </div>
   )

@@ -1,129 +1,115 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Package, ClipboardList, TrendingUp, AlertCircle, ArrowRight, PackagePlus } from 'lucide-react'
 import { supplierApi } from '../../api'
-import { StatCard, OrderStatusBadge, Spinner, EmptyState, PageHeader, formatCurrency, formatDate } from '../../components/ui'
+import { Spinner, formatCurrency } from '../../components/ui'
 import { useAuth } from '../../context/AuthContext'
 
 export default function SupplierDashboard() {
   const { user } = useAuth()
   const [data, setData] = useState(null)
-  const [recentOrders, setRecentOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      supplierApi.getDashboard(),
-      supplierApi.getOrders({ limit: 5 }),
-    ])
-      .then(([dashRes, ordersRes]) => {
-        setData(dashRes.data.data)
-        setRecentOrders(ordersRes.data.data.orders.slice(0, 5))
-      })
+    supplierApi.getDashboard()
+      .then((res) => setData(res.data.data))
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">
-      <Spinner className="h-10 w-10" />
+      <Spinner className="h-10 w-10 text-[#2b2826]" />
     </div>
   )
 
   const stats = data?.stats || {}
 
   return (
-    <div>
-      <PageHeader
-        title={`Welcome, ${user?.name?.split(' ')[0]}! 🏭`}
-        subtitle="Manage your products and incoming orders."
-        action={
-          <Link to="/supplier/products/add" className="btn-primary">
-            <PackagePlus className="w-4 h-4" />
-            Add Product
-          </Link>
-        }
-      />
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Package}
-          label="Active Listings"
-          value={stats.activeListings ?? 0}
-          iconBg="bg-primary-100"
-          iconColor="text-primary-600"
-        />
-        <StatCard
-          icon={AlertCircle}
-          label="Pending Orders"
-          value={stats.pendingOrders ?? 0}
-          iconBg="bg-amber-100"
-          iconColor="text-amber-600"
-          trend={stats.pendingOrders > 0 ? 'Needs attention' : 'All clear'}
-        />
-        <StatCard
-          icon={ClipboardList}
-          label="Total Orders"
-          value={stats.totalOrders ?? 0}
-          iconBg="bg-sky-100"
-          iconColor="text-sky-600"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Total Revenue"
-          value={formatCurrency(stats.totalRevenue ?? 0)}
-          iconBg="bg-green-100"
-          iconColor="text-green-600"
-          trend="From delivered orders"
-        />
+    <div className="max-w-4xl mx-auto pt-10 pb-24">
+      {/* Hero Section */}
+      <div className="text-center mb-16 px-4">
+        <h1 className="font-h1 text-5xl sm:text-6xl text-[#2b2826] font-bold tracking-tight mb-4 leading-tight">
+          Fulfillment <br className="sm:hidden" />
+          <span className="text-[#2b2826]/90">personalized to you</span>
+        </h1>
+        <p className="text-lg text-[#2b2826]/60 mt-6 max-w-lg mx-auto font-medium">
+          Manage your global supply chain with ease, {user?.name?.split(' ')[0]}.
+        </p>
       </div>
 
-      {/* Recent Orders */}
-      <div className="card">
-        <div className="card-header flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-800">Recent Orders</h2>
-          <Link to="/supplier/orders" className="text-sm text-primary-600 hover:underline flex items-center gap-1">
-            View all <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+      {/* Pill Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+        
+        {/* Card 1: Active Listings */}
+        <Link to="/supplier/products" className="group relative bg-[#f4f3ec] rounded-full p-8 md:p-10 flex items-center justify-between hover:scale-[1.02] transition-transform duration-300 ease-out">
+          <div className="z-10">
+            <h3 className="text-2xl font-bold text-[#2b2826] mb-2 flex items-center gap-3">
+              Inventory
+              <span className="bg-[#eaf1ed] text-[#1c5c3e] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Live</span>
+            </h3>
+            <p className="text-[#2b2826]/60 text-lg font-medium">{stats.activeListings ?? 0} active products</p>
+          </div>
+          <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center transform group-hover:-rotate-12 transition-transform duration-500 z-10">
+            <span className="material-symbols-outlined text-4xl text-[#2b2826]">inventory_2</span>
+          </div>
+        </Link>
+
+        {/* Card 2: Pending Orders */}
+        <Link to="/supplier/orders?status=pending" className="group relative bg-[#f9eee6] rounded-full p-8 md:p-10 flex items-center justify-between hover:scale-[1.02] transition-transform duration-300 ease-out">
+          <div className="z-10">
+            <h3 className="text-2xl font-bold text-[#2b2826] mb-2 flex items-center gap-3">
+              Pending
+              {stats.pendingOrders > 0 && (
+                <span className="bg-[#fdebea] text-[#93000a] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Action needed</span>
+              )}
+            </h3>
+            <p className="text-[#2b2826]/60 text-lg font-medium">{stats.pendingOrders ?? 0} to fulfill</p>
+          </div>
+          <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500 z-10">
+            <span className="material-symbols-outlined text-4xl text-[#2b2826]">local_shipping</span>
+          </div>
+        </Link>
+
+        {/* Card 3: Total Orders */}
+        <Link to="/supplier/orders" className="group relative bg-[#eef1f5] rounded-full p-8 md:p-10 flex items-center justify-between hover:scale-[1.02] transition-transform duration-300 ease-out">
+          <div className="z-10">
+            <h3 className="text-2xl font-bold text-[#2b2826] mb-2">Total Orders</h3>
+            <p className="text-[#2b2826]/60 text-lg font-medium">{stats.totalOrders ?? 0} received</p>
+          </div>
+          <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center transform group-hover:translate-x-2 transition-transform duration-500 z-10">
+            <span className="material-symbols-outlined text-4xl text-[#2b2826]">receipt_long</span>
+          </div>
+        </Link>
+
+        {/* Card 4: Revenue */}
+        <div className="group relative bg-white border border-[#2b2826]/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-full p-8 md:p-10 flex items-center justify-between hover:border-[#2b2826]/30 transition-colors duration-300">
+          <div className="z-10">
+            <h3 className="text-2xl font-bold text-[#2b2826] mb-2">Revenue</h3>
+            <p className="text-[#2b2826]/60 text-lg font-medium">{formatCurrency(stats.totalRevenue ?? 0)} total</p>
+          </div>
+          <div className="w-20 h-20 bg-[#faf9f6] rounded-full flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500 z-10">
+            <span className="material-symbols-outlined text-4xl text-[#1c5c3e]">payments</span>
+          </div>
         </div>
-        {recentOrders.length === 0 ? (
-          <div className="card-body">
-            <EmptyState
-              icon={ClipboardList}
-              title="No orders yet"
-              subtitle="Orders will appear here once retailers start purchasing."
-            />
-          </div>
-        ) : (
-          <div className="table-wrap rounded-none border-0">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Retailer</th>
-                  <th>Items</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.map((order) => (
-                  <tr key={order._id}>
-                    <td className="font-mono text-xs text-slate-500">#{order._id.slice(-6).toUpperCase()}</td>
-                    <td className="font-medium">{order.retailerId?.businessName || order.retailerId?.name}</td>
-                    <td>{order.items?.length ?? 0}</td>
-                    <td className="font-semibold">{formatCurrency(order.totalAmount)}</td>
-                    <td><OrderStatusBadge status={order.status} /></td>
-                    <td className="text-slate-500">{formatDate(order.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
       </div>
+
+      {/* Large Featured Bottom Card */}
+      <div className="mt-8 px-4">
+        <div className="bg-[#dfe4df] rounded-[3rem] p-12 sm:p-16 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="font-h1 text-3xl sm:text-4xl text-[#2b2826] font-bold mb-4">
+              Expand your reach with <br className="hidden sm:block" /> New Product Listings
+            </h2>
+            <Link to="/supplier/products/add" className="inline-block mt-6 bg-[#2b2826] text-white font-bold px-8 py-4 rounded-full hover:bg-black transition-colors">
+              Add a Product
+            </Link>
+          </div>
+          {/* Subtle background abstract shape */}
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-white/20 rounded-full blur-3xl"></div>
+        </div>
+      </div>
+      
     </div>
   )
 }

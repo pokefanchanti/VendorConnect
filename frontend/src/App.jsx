@@ -1,11 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProtectedRoute, RoleRoute } from './routes/ProtectedRoute'
 import DashboardLayout from './components/layout/DashboardLayout'
 
 // Auth pages
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 
 // Retailer pages
 import RetailerDashboard from './pages/retailer/RetailerDashboard'
@@ -18,13 +19,22 @@ import SupplierProducts from './pages/supplier/SupplierProducts'
 import AddProduct from './pages/supplier/AddProduct'
 import SupplierOrders from './pages/supplier/SupplierOrders'
 
+function RootRedirect() {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  if (!user) return <Navigate to="/login" replace />
+  return <Navigate to={user.role === 'supplier' ? '/supplier/dashboard' : '/retailer/dashboard'} replace />
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Retailer routes */}
         <Route
@@ -58,7 +68,6 @@ export default function App() {
         </Route>
 
         {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </AuthProvider>

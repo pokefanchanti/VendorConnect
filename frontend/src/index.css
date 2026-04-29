@@ -7,37 +7,47 @@
     box-sizing: border-box;
   }
 
-  /* SVG noise data URI — feTurbulence fractalNoise, greyscale, opacity 0.04 */
-  /* Layered over a warm 3-stop diagonal gradient for subtle depth */
   body {
-    @apply text-secondary-800 font-sans antialiased;
-    background-color: #f5f5f4; /* stone-100 fallback */
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
-      linear-gradient(150deg, #fafaf9 0%, #f5f5f4 40%, #e7e5e4 100%);
+    @apply text-on-surface font-body-md antialiased bg-background;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-secondary-900;
+    @apply font-bold tracking-tight text-on-surface;
   }
 }
 
 @layer components {
+  /* ── Icons ───────────────────────────────────── */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .icon-fill {
+    font-variation-settings: 'FILL' 1;
+  }
+
+  /* ── Shadows ─────────────────────────────────── */
+  .shadow-ambient {
+    box-shadow: 0 10px 40px -10px rgba(37, 99, 235, 0.05);
+  }
+  .shadow-ambient-raised {
+    box-shadow: 0 20px 50px -15px rgba(37, 99, 235, 0.08);
+  }
+
   /* ── Buttons ─────────────────────────────────── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-primary-700 text-white hover:bg-primary-800 focus:ring-primary-600 active:bg-primary-900;
+    @apply btn bg-primary text-on-primary hover:opacity-90 focus:ring-primary-container;
   }
   .btn-secondary {
-    @apply btn bg-white text-secondary-700 border border-secondary-300 hover:bg-stone-50 focus:ring-primary-600;
+    @apply btn bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-container-high focus:ring-primary-container;
   }
   .btn-danger {
-    @apply btn bg-red-700 text-white hover:bg-red-800 focus:ring-red-600;
+    @apply btn bg-error text-on-error hover:opacity-90 focus:ring-error;
   }
   .btn-ghost {
-    @apply btn text-secondary-600 hover:bg-stone-200 focus:ring-primary-600;
+    @apply btn text-on-surface hover:bg-surface-container-high focus:ring-primary-container;
   }
   .btn-sm {
     @apply px-3 py-1.5 text-xs;
@@ -48,27 +58,27 @@
 
   /* ── Form elements ───────────────────────────── */
   .input {
-    @apply block w-full px-3 py-2.5 rounded-lg border border-secondary-300 text-sm text-secondary-800 bg-white placeholder-secondary-400 transition focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600;
+    @apply block w-full px-3 py-2.5 rounded-lg border border-outline-variant text-sm text-on-surface bg-surface placeholder-outline transition focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container;
   }
   .input-error {
-    @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+    @apply border-error focus:ring-error focus:border-error;
   }
   .label {
-    @apply block text-sm font-semibold text-secondary-700 mb-1;
+    @apply block text-sm font-semibold text-on-surface mb-1;
   }
   .form-group {
     @apply flex flex-col gap-1;
   }
   .error-text {
-    @apply text-xs text-red-600 mt-0.5;
+    @apply text-xs text-error mt-0.5;
   }
 
   /* ── Cards ───────────────────────────────────── */
   .card {
-    @apply bg-white rounded-xl border border-secondary-200 shadow-sm;
+    @apply bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm;
   }
   .card-header {
-    @apply px-6 py-4 border-b border-secondary-100;
+    @apply px-6 py-4 border-b border-surface-container;
   }
   .card-body {
     @apply px-6 py-4;
@@ -86,67 +96,53 @@
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide;
   }
-  /* pending  → warm amber */
-  .badge-pending   { @apply badge bg-amber-100 text-amber-800 border border-amber-200; }
-  /* accepted → teal/green-ish industrial */
-  .badge-accepted  { @apply badge bg-secondary-100 text-secondary-700 border border-secondary-200; }
-  /* shipped  → primary amber */
-  .badge-shipped   { @apply badge bg-primary-100 text-primary-800 border border-primary-200; }
-  /* delivered → dark green */
-  .badge-delivered { @apply badge bg-emerald-100 text-emerald-800 border border-emerald-200; }
-  /* cancelled → muted red */
-  .badge-cancelled { @apply badge bg-red-100 text-red-800 border border-red-200; }
+  .badge-pending   { @apply badge bg-secondary-fixed text-on-secondary-fixed border border-secondary-fixed-dim; }
+  .badge-accepted  { @apply badge bg-primary-container text-on-primary-container border border-primary; }
+  .badge-shipped   { @apply badge bg-tertiary-container text-on-tertiary-container border border-tertiary; }
+  .badge-delivered { @apply badge bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim; }
+  .badge-cancelled { @apply badge bg-error-container text-on-error-container border border-error; }
 
   /* ── Tables ──────────────────────────────────── */
   .table-wrap {
-    @apply overflow-x-auto rounded-xl border border-secondary-200;
+    @apply overflow-x-auto rounded-xl border border-outline-variant;
   }
   .table {
     @apply w-full text-sm text-left;
   }
   .table thead {
-    @apply bg-secondary-800 text-secondary-200 text-xs uppercase tracking-wider;
+    @apply bg-surface-container-high text-on-surface text-xs uppercase tracking-wider;
   }
   .table th {
     @apply px-5 py-3 font-semibold;
   }
   .table td {
-    @apply px-5 py-3 border-t border-secondary-100 text-secondary-700;
+    @apply px-5 py-3 border-t border-surface-container text-on-surface-variant;
   }
   .table tbody tr {
-    @apply hover:bg-stone-50 transition-colors;
+    @apply hover:bg-surface-container-low transition-colors;
   }
 
   /* ── Sidebar ─────────────────────────────────── */
   .sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-secondary-500 hover:bg-primary-50 hover:text-primary-700 transition-all duration-150;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all duration-150;
   }
   .sidebar-link.active {
-    @apply bg-primary-100 text-primary-800 font-semibold;
+    @apply bg-primary-container text-on-primary-container font-semibold;
   }
 
   /* ── Page layout ─────────────────────────────── */
   .page-title {
-    @apply text-2xl font-bold text-secondary-900;
+    @apply text-2xl font-bold text-on-surface;
   }
   .page-subtitle {
-    @apply text-sm text-secondary-500 mt-0.5 font-normal;
+    @apply text-sm text-on-surface-variant mt-0.5 font-normal;
   }
 
   /* ── Modal ───────────────────────────────────── */
   .modal-backdrop {
-    @apply fixed inset-0 bg-secondary-900/60 backdrop-blur-sm z-40 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-inverse-surface/60 backdrop-blur-sm z-40 flex items-center justify-center p-4;
   }
   .modal {
-    @apply bg-white rounded-xl shadow-2xl w-full max-w-lg z-50 overflow-hidden border border-secondary-200;
-  }
-
-  /* ── Auth page background ─────────────────────── */
-  /* Same noise + gradient as body; applied to Login / Register wrappers */
-  .auth-bg {
-    background-color: #f5f5f4;
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
-      linear-gradient(160deg, #fafaf9 0%, #f5f5f4 45%, #e7e5e4 100%);
+    @apply bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-lg z-50 overflow-hidden border border-outline-variant;
   }
 }
