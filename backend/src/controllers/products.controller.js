@@ -5,15 +5,46 @@ const SupplierProduct = require('../models/SupplierProduct');
 // @access  JWT (any role)
 const browseProducts = async (req, res) => {
   try {
-    const { category, search, supplierId, sortBy = 'price', order = 'asc' } = req.query;
+    const { category, search, supplierId, sortBy = 'price', order = 'asc', locationFilter, minRating, minVScore } = req.query;
 
     const filter = { isActive: true, stock: { $gt: 0 } };
     if (supplierId) filter.supplierId = supplierId;
 
+    // Location-based filtering (MongoDB query for efficiency)
+    if (locationFilter && ['city', 'district', 'state'].includes(locationFilter) && req.user?.address?.[locationFilter]) {
+      const User = require('../models/User');
+      const matchingSuppliers = await User.find({
+        role: 'supplier',
+        [`address.${locationFilter}`]: req.user.address[locationFilter]
+      }).select('_id');
+      
+      const matchingSupplierIds = matchingSuppliers.map(s => s._id);
+      
+      if (filter.supplierId) {
+        // If a specific supplier was requested, ensure they match the location criteria
+        const isMatch = matchingSupplierIds.some(id => id.toString() === filter.supplierId.toString());
+        if (!isMatch) {
+          return res.json({ success: true, data: { listings: [], total: 0 } });
+        }
+      } else {
+        filter.supplierId = { $in: matchingSupplierIds };
+      }
+    }
+
     let listings = await SupplierProduct.find(filter)
       .populate('productId', 'name description category unit imageUrl')
-      .populate('supplierId', 'name businessName email')
+      .populate('supplierId', 'name businessName email address')
       .lean();
+
+    const { calculateSupplierVScore } = require('../utils/vscore');
+    const vscoreCache = {};
+    for (const listing of listings) {
+      const supIdStr = listing.supplierId._id.toString();
+      if (!vscoreCache[supIdStr]) {
+        vscoreCache[supIdStr] = await calculateSupplierVScore(supIdStr);
+      }
+      listing.supplierVScore = vscoreCache[supIdStr];
+    }
 
     // Filter by category (post-populate)
     if (category) {
@@ -32,12 +63,24 @@ const browseProducts = async (req, res) => {
       );
     }
 
+    // Filter by VScore and Rating
+    if (minRating) {
+      listings = listings.filter((l) => l.supplierVScore.avgRating >= parseFloat(minRating));
+    }
+    if (minVScore) {
+      listings = listings.filter((l) => l.supplierVScore.VScore >= parseInt(minVScore, 10));
+    }
+
     // Sort
     const sortDir = order === 'desc' ? -1 : 1;
     if (sortBy === 'price') {
       listings.sort((a, b) => (a.price - b.price) * sortDir);
     } else if (sortBy === 'stock') {
       listings.sort((a, b) => (a.stock - b.stock) * sortDir);
+    } else if (sortBy === 'vscore') {
+      listings.sort((a, b) => (a.supplierVScore.VScore - b.supplierVScore.VScore) * sortDir);
+    } else if (sortBy === 'rating') {
+      listings.sort((a, b) => (a.supplierVScore.avgRating - b.supplierVScore.avgRating) * sortDir);
     }
 
     res.json({ success: true, data: { listings, total: listings.length } });
@@ -54,7 +97,7 @@ const getProductById = async (req, res) => {
   try {
     const listing = await SupplierProduct.findById(req.params.id)
       .populate('productId')
-      .populate('supplierId', 'name businessName email phone');
+      .populate('supplierId', 'name businessName email phone address');
 
     if (!listing || !listing.isActive) {
       return res.status(404).json({ success: false, message: 'Product not found.' });

@@ -21,10 +21,21 @@ export const supplierApi = {
   getOrders: (params) => api.get('/supplier/orders', { params }),
   updateOrderStatus: (id, status) =>
     api.put(`/supplier/orders/${id}/status`, { status }),
+  schedulePickup: (id, pickupTime) =>
+    api.patch(`/supplier/orders/${id}/schedule-pickup`, { pickupTime }),
+  markPickedUp: (id) => api.patch(`/supplier/orders/${id}/pickup`),
+  markDelivered: (id) => api.patch(`/supplier/orders/${id}/deliver`),
+  getVScore: (id) => api.get(`/supplier/${id}/vscore`),
 }
 
 export const retailerApi = {
   getDashboard: () => api.get('/retailer/dashboard'),
   placeOrder: (data) => api.post('/retailer/orders', data),
   getOrders: (params) => api.get('/retailer/orders', { params }),
+  getVScore: (id) => api.get(`/retailer/${id}/vscore`),
+}
+
+export const reviewApi = {
+  createReview: (data) => api.post('/reviews', data),
+  getUserReviews: (id) => api.get(`/reviews/user/${id}`),
 }

@@ -1,6 +1,8 @@
 const SupplierProduct = require('../models/SupplierProduct');
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
+const User = require('../models/User');
+const { calculateDeliveryCost } = require('../utils/delivery');
 
 // @desc    Get retailer dashboard stats
 // @route   GET /api/retailer/dashboard
@@ -46,7 +48,7 @@ const getDashboard = async (req, res) => {
 // @access  Retailer
 const placeOrder = async (req, res) => {
   try {
-    const { items, notes } = req.body;
+    const { items, notes, deliveryTime } = req.body;
     // items: [{ supplierProductId, quantity }]
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -83,7 +85,7 @@ const placeOrder = async (req, res) => {
 
     // Validate stock and min order qty
     const orderItems = [];
-    let totalAmount = 0;
+    let itemsTotal = 0;
 
     for (const item of items) {
       const listing = listings.find(
@@ -110,7 +112,7 @@ const placeOrder = async (req, res) => {
       }
 
       const subtotal = listing.price * item.quantity;
-      totalAmount += subtotal;
+      itemsTotal += subtotal;
 
       orderItems.push({
         supplierProductId: listing._id,
@@ -121,14 +123,35 @@ const placeOrder = async (req, res) => {
       });
     }
 
+    // Fetch supplier to calculate delivery cost
+    const supplier = await User.findById(supplierId);
+    
+    // Calculate delivery cost safely
+    const deliveryDetails = calculateDeliveryCost(
+      supplier ? supplier.address : null,
+      req.user ? req.user.address : null
+    );
+
+    // Calculate final total order amount
+    const totalAmount = itemsTotal + deliveryDetails.cost;
+
     // Create order
-    const order = await Order.create({
+    const orderData = {
       retailerId: req.user._id,
       supplierId,
+      itemsTotal,
       totalAmount,
+      deliveryCost: deliveryDetails.cost,
+      deliveryType: deliveryDetails.type,
       notes,
       statusHistory: [{ status: 'pending', changedBy: req.user._id }],
-    });
+    };
+    
+    if (deliveryTime) {
+      orderData.deliveryTime = new Date(deliveryTime);
+    }
+
+    const order = await Order.create(orderData);
 
     // Create order items
     const createdItems = await OrderItem.insertMany(
@@ -172,7 +195,9 @@ const getMyOrders = async (req, res) => {
       orders.map(async (order) => {
         const items = await OrderItem.find({ orderId: order._id })
           .populate('productId', 'name unit imageUrl');
-        return { ...order.toObject(), items };
+        const Review = require('../models/Review');
+        const review = await Review.findOne({ orderId: order._id, reviewerId: req.user._id });
+        return { ...order.toObject(), items, isReviewed: !!review };
       })
     );
 
@@ -183,4 +208,18 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-module.exports = { getDashboard, placeOrder, getMyOrders };
+// @desc    Get retailer V-Score
+// @route   GET /api/retailer/:id/vscore
+// @access  JWT
+const getVScore = async (req, res) => {
+  try {
+    const { calculateRetailerVScore } = require('../utils/vscore');
+    const scoreData = await calculateRetailerVScore(req.params.id);
+    res.json({ success: true, data: scoreData });
+  } catch (error) {
+    console.error('Get retailer vscore error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+module.exports = { getDashboard, placeOrder, getMyOrders, getVScore };

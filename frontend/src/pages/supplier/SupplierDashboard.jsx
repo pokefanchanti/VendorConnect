@@ -1,20 +1,37 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supplierApi } from '../../api'
-import { Spinner, formatCurrency } from '../../components/ui'
+import { supplierApi, reviewApi } from '../../api'
+import { Spinner, formatCurrency, formatDate } from '../../components/ui'
 import { useAuth } from '../../context/AuthContext'
+
+function getSupplierLabel(score) {
+  if (score >= 90) return { label: '🟢 Elite Supplier', color: 'text-[#1c5c3e] bg-[#eaf1ed]' }
+  if (score >= 75) return { label: '🔵 Trusted Supplier', color: 'text-blue-700 bg-blue-50' }
+  if (score >= 50) return { label: '🟡 Average', color: 'text-yellow-700 bg-yellow-50' }
+  return { label: '🔴 Risky Supplier', color: 'text-red-700 bg-red-50' }
+}
 
 export default function SupplierDashboard() {
   const { user } = useAuth()
   const [data, setData] = useState(null)
+  const [vscoreData, setVscoreData] = useState(null)
+  const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supplierApi.getDashboard()
-      .then((res) => setData(res.data.data))
+    Promise.all([
+      supplierApi.getDashboard(),
+      supplierApi.getVScore(user._id),
+      reviewApi.getUserReviews(user._id)
+    ])
+      .then(([dashRes, vsRes, revRes]) => {
+        setData(dashRes.data.data)
+        setVscoreData(vsRes.data.data)
+        setReviews(revRes.data.data.reviews || [])
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [])
+  }, [user._id])
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">
@@ -36,6 +53,54 @@ export default function SupplierDashboard() {
           Manage your global supply chain with ease, {user?.name?.split(' ')[0]}.
         </p>
       </div>
+
+      {/* Trust & Performance Section (V-Score) */}
+      {vscoreData && (
+        <div className="px-4 mb-8">
+          <div className="bg-white border border-[#2b2826]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 hover:border-[#2b2826]/20 transition-colors duration-300">
+            {vscoreData.hasEnoughData ? (
+              <>
+                <div className="flex-1 w-full grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
+                  <div>
+                    <p className="text-[#2b2826]/40 text-xs font-bold uppercase tracking-wider mb-2">Avg Rating</p>
+                    <p className="text-2xl font-bold text-[#2b2826]">⭐ {vscoreData.displayRating?.toFixed(1) || '0.0'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#2b2826]/40 text-xs font-bold uppercase tracking-wider mb-2">Reviews</p>
+                    <p className="text-2xl font-bold text-[#2b2826]">🧾 {vscoreData.totalReviews || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#2b2826]/40 text-xs font-bold uppercase tracking-wider mb-2">Completion</p>
+                    <p className="text-2xl font-bold text-[#2b2826]">📦 {vscoreData.completionRate}%</p>
+                  </div>
+                  <div>
+                    <p className="text-[#2b2826]/40 text-xs font-bold uppercase tracking-wider mb-2">Cancellation</p>
+                    <p className="text-2xl font-bold text-[#2b2826]">❌ {vscoreData.cancellationRate}%</p>
+                  </div>
+                </div>
+                
+                <div className="w-full md:w-auto text-center border-t md:border-t-0 md:border-l border-[#2b2826]/10 pt-8 md:pt-0 md:pl-10">
+                  <p className="text-[#2b2826]/40 text-xs font-bold uppercase tracking-wider mb-3">Your V-Score</p>
+                  <div className="text-7xl font-h1 font-bold text-[#2b2826] flex items-center justify-center gap-2 mb-3 leading-none">
+                    🏆 {vscoreData.VScore}
+                  </div>
+                  <span className={`inline-block px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${getSupplierLabel(vscoreData.VScore).color}`}>
+                    {getSupplierLabel(vscoreData.VScore).label}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="w-full text-center py-6">
+                <span className="material-symbols-outlined text-5xl text-[#2b2826]/20 mb-3">analytics</span>
+                <h3 className="text-xl font-bold text-[#2b2826]">Not enough data</h3>
+                <p className="text-[#2b2826]/60 mt-2 max-w-md mx-auto">
+                  We need a bit more order history to calculate your V-Score accurately. Keep fulfilling orders!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Pill Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
@@ -92,6 +157,37 @@ export default function SupplierDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Recent Reviews Section */}
+      <div className="mt-8 px-4">
+        <h2 className="text-2xl font-bold text-[#2b2826] mb-6">Recent Reviews</h2>
+        {reviews.length === 0 ? (
+          <div className="bg-white border border-[#2b2826]/10 rounded-3xl p-8 text-center text-[#2b2826]/60">
+            No reviews yet. Keep delivering great service to start building your reputation!
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reviews.slice(0, 5).map((review) => (
+              <div key={review._id} className="bg-white border border-[#2b2826]/10 rounded-3xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-[#2b2826]">{review.reviewerId?.businessName || review.reviewerId?.name}</p>
+                    <p className="text-xs text-[#2b2826]/50">{formatDate(review.createdAt)}</p>
+                  </div>
+                  <div className="bg-amber-50 text-amber-600 px-3 py-1 rounded-full font-bold text-sm">
+                    ⭐ {review.rating.toFixed(1)}
+                  </div>
+                </div>
+                {review.comment && (
+                  <p className="text-[#2b2826]/80 mt-4 leading-relaxed bg-[#f4f3ec] p-4 rounded-2xl text-sm border border-[#2b2826]/5">
+                    "{review.comment}"
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Large Featured Bottom Card */}

@@ -25,6 +25,7 @@ app.use('/api/auth', require('./src/routes/auth.routes'));
 app.use('/api/products', require('./src/routes/products.routes'));
 app.use('/api/supplier', require('./src/routes/supplier.routes'));
 app.use('/api/retailer', require('./src/routes/retailer.routes'));
+app.use('/api/reviews', require('./src/routes/review.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
     name: '', email: '', password: '', businessName: '', phone: '', role: 'retailer',
+    city: '', district: '', state: '', pincode: ''
   })
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -40,7 +41,16 @@ export default function RegisterPage() {
     }
     setLoading(true)
     try {
-      const res = await authApi.register(form)
+      const payload = {
+        ...form,
+        address: {
+          city: form.city,
+          district: form.district,
+          state: form.state,
+          pincode: form.pincode
+        }
+      }
+      const res = await authApi.register(payload)
       login(res.data.data)
       toast.success('Account created! Welcome to VendorConnect.')
       navigate(form.role === 'supplier' ? '/supplier/dashboard' : '/retailer/dashboard')
@@ -206,7 +216,95 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="space-y-2">
+                <label htmlFor="city" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                  City
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                    <span className="material-symbols-outlined text-xl">location_city</span>
+                  </div>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                    placeholder="Mumbai"
+                    value={form.city}
+                    onChange={handleChange}
+                    className="block w-full pl-12 pr-4 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="district" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                  District
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                    <span className="material-symbols-outlined text-xl">map</span>
+                  </div>
+                  <input
+                    id="district"
+                    name="district"
+                    type="text"
+                    required
+                    placeholder="Mumbai Suburban"
+                    value={form.district}
+                    onChange={handleChange}
+                    className="block w-full pl-12 pr-4 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="space-y-2">
+                <label htmlFor="state" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                  State
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                    <span className="material-symbols-outlined text-xl">terrain</span>
+                  </div>
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    required
+                    placeholder="Maharashtra"
+                    value={form.state}
+                    onChange={handleChange}
+                    className="block w-full pl-12 pr-4 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="pincode" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
+                  Pincode
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2b2826]/40">
+                    <span className="material-symbols-outlined text-xl">pin_drop</span>
+                  </div>
+                  <input
+                    id="pincode"
+                    name="pincode"
+                    type="text"
+                    required
+                    placeholder="400001"
+                    value={form.pincode}
+                    onChange={handleChange}
+                    className="block w-full pl-12 pr-4 py-4 text-[#2b2826] bg-[#faf9f6] border border-transparent rounded-full focus:ring-2 focus:ring-[#2b2826]/20 focus:bg-white transition-all shadow-sm outline-none placeholder:text-[#2b2826]/30 font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
               <label htmlFor="password" className="block font-label-sm text-sm font-bold text-[#2b2826]/80 px-4">
                 Password
               </label>

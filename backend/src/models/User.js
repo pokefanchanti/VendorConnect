@@ -33,11 +33,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     address: {
-      street: String,
       city: String,
+      district: String,
       state: String,
       pincode: String,
-      country: { type: String, default: 'India' },
     },
     businessName: {
       type: String,
@@ -51,6 +50,8 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     // --- Future extensibility fields ---
     creditLimit: {
       type: Number,

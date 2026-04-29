@@ -153,7 +153,9 @@ const getSupplierOrders = async (req, res) => {
       orders.map(async (order) => {
         const items = await OrderItem.find({ orderId: order._id })
           .populate('productId', 'name unit imageUrl');
-        return { ...order.toObject(), items };
+        const Review = require('../models/Review');
+        const review = await Review.findOne({ orderId: order._id, reviewerId: req.user._id });
+        return { ...order.toObject(), items, isReviewed: !!review };
       })
     );
 
@@ -172,8 +174,8 @@ const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
     const validTransitions = {
       pending: ['accepted', 'cancelled'],
-      accepted: ['shipped', 'cancelled'],
-      shipped: ['delivered'],
+      accepted: ['in_transit', 'cancelled'],
+      in_transit: ['delivered'],
     };
 
     const order = await Order.findOne({
@@ -204,8 +206,26 @@ const updateOrderStatus = async (req, res) => {
     });
 
     order.status = status;
+    
+    // Sync the stage based on base status
+    if (status === 'in_transit') order.orderStatusStage = 'in_transit';
+    if (status === 'delivered') order.orderStatusStage = 'delivered';
+    if (status === 'cancelled') order.orderStatusStage = 'cancelled';
+
     if (status === 'delivered') {
       order.paymentStatus = 'paid'; // COD: mark paid on delivery
+    } else if (status === 'cancelled') {
+      order.cancelledBy = 'supplier';
+      // Restore stock for all order items securely
+      const orderItems = await OrderItem.find({ orderId: order._id });
+      for (const item of orderItems) {
+        if (item.supplierProductId) {
+          await SupplierProduct.findByIdAndUpdate(
+            item.supplierProductId,
+            { $inc: { stock: item.quantity } }
+          );
+        }
+      }
     }
 
     await order.save();
@@ -233,7 +253,19 @@ const getSupplierDashboard = async (req, res) => {
 
     const revenueResult = await Order.aggregate([
       { $match: { supplierId, status: 'delivered' } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+      { 
+        $group: { 
+          _id: null, 
+          total: { 
+            $sum: { 
+              $ifNull: [
+                '$itemsTotal', 
+                { $subtract: ['$totalAmount', { $ifNull: ['$deliveryCost', 0] }] }
+              ] 
+            } 
+          } 
+        } 
+      },
     ]);
     const totalRevenue = revenueResult[0]?.total || 0;
 
@@ -249,6 +281,105 @@ const getSupplierDashboard = async (req, res) => {
   }
 };
 
+// @desc    Schedule pickup for an order
+// @route   PATCH /api/supplier/orders/:id/schedule-pickup
+// @access  Supplier
+const schedulePickup = async (req, res) => {
+  try {
+    const { pickupTime } = req.body;
+    if (!pickupTime) {
+      return res.status(400).json({ success: false, message: 'Pickup time is required.' });
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      supplierId: req.user._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found or not assigned to you.' });
+    }
+
+    if (order.status === 'cancelled' || order.status === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Cannot schedule pickup for completed or cancelled orders.' });
+    }
+
+    order.pickupTime = new Date(pickupTime);
+    order.orderStatusStage = 'pickup_scheduled';
+    await order.save();
+
+    res.json({ success: true, message: 'Pickup scheduled successfully.', data: { order } });
+  } catch (error) {
+    console.error('Schedule pickup error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// @desc    Mark order as picked up
+// @route   PATCH /api/supplier/orders/:id/pickup
+// @access  Supplier
+const markPickedUp = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, supplierId: req.user._id });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
+
+    if (order.status === 'cancelled' || order.status === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Cannot pick up a completed or cancelled order.' });
+    }
+
+    order.status = 'in_transit';
+    order.orderStatusStage = 'in_transit';
+    order.pickedUpAt = new Date();
+    order.statusHistory.push({ status: 'in_transit', changedAt: new Date(), changedBy: req.user._id });
+    
+    await order.save();
+    res.json({ success: true, message: 'Order marked as picked up.', data: { order } });
+  } catch (error) {
+    console.error('Mark picked up error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// @desc    Mark order as delivered
+// @route   PATCH /api/supplier/orders/:id/deliver
+// @access  Supplier
+const markDelivered = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, supplierId: req.user._id });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
+
+    if (order.status !== 'in_transit') {
+      return res.status(400).json({ success: false, message: 'Order must be in transit to be delivered.' });
+    }
+
+    order.status = 'delivered';
+    order.orderStatusStage = 'delivered';
+    order.paymentStatus = 'paid'; // Assuming COD completes here
+    order.deliveredAt = new Date();
+    order.statusHistory.push({ status: 'delivered', changedAt: new Date(), changedBy: req.user._id });
+    
+    await order.save();
+    res.json({ success: true, message: 'Order marked as delivered.', data: { order } });
+  } catch (error) {
+    console.error('Mark delivered error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// @desc    Get supplier V-Score
+// @route   GET /api/supplier/:id/vscore
+// @access  JWT
+const getVScore = async (req, res) => {
+  try {
+    const { calculateSupplierVScore } = require('../utils/vscore');
+    const scoreData = await calculateSupplierVScore(req.params.id);
+    res.json({ success: true, data: scoreData });
+  } catch (error) {
+    console.error('Get supplier vscore error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 module.exports = {
   addProduct,
   getMyProducts,
@@ -257,4 +388,8 @@ module.exports = {
   getSupplierOrders,
   updateOrderStatus,
   getSupplierDashboard,
+  schedulePickup,
+  markPickedUp,
+  markDelivered,
+  getVScore,
 };
