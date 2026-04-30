@@ -1,45 +1,119 @@
-# VendorConnect — Project Planning & Architecture
+# 🚀 VendorConnect — B2B Marketplace Platform
 
-## Overview
-VendorConnect is an upcoming full-stack application designed to connect suppliers and retailers. This document outlines our planned architecture, database schemas, and expected API endpoints for development.
+VendorConnect is a full-stack B2B marketplace that connects **suppliers and retailers**, enabling product discovery, logistics handling, trust scoring (V-Score), and price negotiation.
 
-## Proposed Tech Stack
-- **Environment**: Node.js v20+
-- **Database**: MongoDB Atlas
-- **Frontend**: React (Vite) with Tailwind CSS
+---
+### 🔹 Feature Highlights
 
-## Planned Project Structure
-We will divide the repository into `backend/` and `frontend/` directories.
+* **🛒 Order Flow:** Retailer → Order → Supplier → Delivery
+* **🚚 Logistics:** Pickup → In Transit → Delivered
+* **⭐ Ratings & V-Score:** Two-way rating system with trust scoring
 
-### Backend (Express)
-- `src/config/db.js`: MongoDB Atlas connection setup.
-- `src/models/`: Mongoose schemas for User, Product, SupplierProduct, Order, and OrderItem.
-- `src/controllers/` & `src/routes/`: Handlers for auth, supplier, retailer, and product operations.
-- `src/middleware/`: JWT authentication and role-based access control.
+---
 
-### Frontend (React/Vite)
-- `src/api/`: Axios instance for backend communication.
-- `src/context/`: Global state management for authentication via JWT.
-- `src/pages/`: Dedicated routing views for Authentication, Retailer dashboards, and Supplier dashboards.
+## 🧠 Key Features
 
-## Target API Endpoints
-- **Auth**: `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
-- **Products**: `/api/products` (browse active listings), `/api/products/categories`
-- **Supplier**: POST/GET/PUT/DELETE for `/api/supplier/products`, plus `/api/supplier/orders` and `/api/supplier/dashboard`
-- **Retailer**: POST/GET for `/api/retailer/orders`, plus `/api/retailer/dashboard`
+### 🔐 Authentication & Access
+- JWT-based login and registration.
+- Role-based access control (Supplier vs. Retailer).
+- Password recovery and reset functionality.
 
-## Database Models (Draft)
-| Model | Proposed Fields |
-|-------|-----------|
-| User | name, email, password, role, businessName, trustScore |
-| Product | name, category, unit, imageUrl |
-| SupplierProduct | supplierId, productId, price, stock, minOrderQty |
-| Order | retailerId, supplierId, status, totalAmount, paymentMethod |
-| OrderItem | orderId, supplierProductId, quantity, unitPrice, subtotal |
+### 🛒 Inventory & Product Management
+- **Suppliers:** Full CRUD operations on products, stock management, and pricing control.
+- **Retailers:** Advanced browsing with comprehensive filtering options.
 
-## Target Testing Flow
-Once the MVP is complete, we will verify the core loop by:
-1. Registering as a Supplier and adding products.
-2. Registering as a Retailer to browse products and place an order.
-3. Having the Supplier accept and fulfill the order.
-4. Having the Retailer verify the status update.
+### 📦 Order & Logistics
+- Complete order lifecycle: `Pending` → `In Transit` → `Delivered` → `Cancelled`.
+- **Location-Based Logistics:** Dynamic delivery costing based on City (₹50), District (₹100), State (₹200), and Interstate (₹400) shipping.
+- **Real-Time Tracking:** Timestamps for `pickedUpAt` and `deliveredAt`.
+- **Automatic Inventory:** Real-time stock reduction on purchase and restoration on cancellation.
+
+### 🏆 V-Score (Trust System)
+A proprietary scoring mechanism to ensure marketplace integrity:
+- **Supplier Score:** Derived from average ratings, order completion rates, and cancellation penalties.
+- **Retailer Score:** Derived from success rates, cancellation history, and supplier feedback.
+- **Badges:** 🟢 Elite (90+), 🔵 Trusted (75-89), 🟡 Average (50-74), 🔴 Risky (<50).
+
+---
+
+## 📊 Dashboards
+
+- **Supplier Dashboard:** Monitor revenue (net of delivery), order volume, V-Score trends, and active negotiations.
+- **Retailer Dashboard:** Track spending, order history, V-Score status, and pending offers.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend:** Node.js, Express.js, Mongoose
+- **Database:** MongoDB Atlas
+- **Frontend:** React (Vite), Tailwind CSS, Axios
+- **Auth:** JSON Web Tokens (JWT)
+
+---
+
+## 🚀 Setup Instructions
+
+### 1. Clone Repository
+```bash
+git clone [https://github.com/pokefanchanti/VendorConnect.git](https://github.com/pokefanchanti/VendorConnect.git)
+cd VendorConnect
+```
+
+### 2. Install Dependencies
+Backend
+```bash
+cd backend
+npm install
+```
+
+
+Frontend
+```bash
+cd frontend
+npm install
+```
+
+### 3. Environment Variables
+backend/.env
+```bash
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+```
+
+frontend/.env
+```bash
+VITE_API_URL=http://localhost:5000
+```
+
+## 4. Run App
+Backend
+```bash
+cd backend
+npm run dev
+```
+
+
+Frontend
+```bash
+cd frontend
+npm run dev
+```
+---
+
+## Architecture
+Frontend : React + Vite
+
+Backend : Express API (Node.js)
+
+Database : MongoDB Atlas
+
+## Development Notes
+- Delivery costs are handled separately and do not count toward Supplier revenue.
+
+- V-Score calculations are dynamic and updated upon order completion/cancellation.
+
+- Reviews can only be submitted after a successful delivery to prevent spam.
