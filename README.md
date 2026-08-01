@@ -1,4 +1,4 @@
-# 🚀 VendorConnect — B2B Marketplace Platform
+# VendorConnect — B2B Marketplace Platform
 
 VendorConnect is a full-stack B2B marketplace that connects **suppliers and retailers**, enabling product discovery, logistics handling, trust scoring (V-Score), and price negotiation.
 
@@ -10,12 +10,12 @@ VendorConnect is a full-stack B2B marketplace that connects **suppliers and reta
 
 ### 🔹 Feature Highlights
 
-* **🛒 Order Flow:** Retailer → Order → Supplier → Delivery
-* **🚚 Logistics:** Pickup → In Transit → Delivered
-* **⭐ Ratings & V-Score:** Two-way rating system with trust scoring
+* ** Order Flow:** Retailer → Order → Supplier → Delivery
+* ** Logistics:** Pickup → In Transit → Delivered
+* ** Ratings & V-Score:** Two-way rating system with trust scoring
 
 
-## 🧠 Key Features
+## Key Features
 
 ### 🔐 Authentication & Access
 - JWT-based login and registration.
