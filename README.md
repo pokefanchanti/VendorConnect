@@ -10,9 +10,9 @@ VendorConnect is a full-stack B2B marketplace that connects **suppliers and reta
 
 ### 🔹 Feature Highlights
 
-* ** Order Flow:** Retailer → Order → Supplier → Delivery
-* ** Logistics:** Pickup → In Transit → Delivered
-* ** Ratings & V-Score:** Two-way rating system with trust scoring
+* **Order Flow:** Retailer → Order → Supplier → Delivery
+* **Logistics:** Pickup → In Transit → Delivered
+* **Ratings & V-Score:** Two-way rating system with trust scoring
 
 
 ## Key Features
