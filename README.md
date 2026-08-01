@@ -2,14 +2,18 @@
 
 VendorConnect is a full-stack B2B marketplace that connects **suppliers and retailers**, enabling product discovery, logistics handling, trust scoring (V-Score), and price negotiation.
 
----
+
+## Live Link
+
+* **Frontend** (Live Application): https://vendor-connect-kohl.vercel.app
+* **Backend API** (Status): https://vendorconnect-a3e1.onrender.com/api/health
+
 ### 🔹 Feature Highlights
 
 * **🛒 Order Flow:** Retailer → Order → Supplier → Delivery
 * **🚚 Logistics:** Pickup → In Transit → Delivered
 * **⭐ Ratings & V-Score:** Two-way rating system with trust scoring
 
----
 
 ## 🧠 Key Features
 
@@ -34,14 +38,12 @@ A proprietary scoring mechanism to ensure marketplace integrity:
 - **Retailer Score:** Derived from success rates, cancellation history, and supplier feedback.
 - **Badges:** 🟢 Elite (90+), 🔵 Trusted (75-89), 🟡 Average (50-74), 🔴 Risky (<50).
 
----
 
 ## 📊 Dashboards
 
 - **Supplier Dashboard:** Monitor revenue (net of delivery), order volume, V-Score trends, and active negotiations.
 - **Retailer Dashboard:** Track spending, order history, V-Score status, and pending offers.
 
----
 
 ## 🛠️ Tech Stack
 
@@ -50,59 +52,6 @@ A proprietary scoring mechanism to ensure marketplace integrity:
 - **Frontend:** React (Vite), Tailwind CSS, Axios
 - **Auth:** JSON Web Tokens (JWT)
 
----
-
-## 🚀 Setup Instructions
-
-### 1. Clone Repository
-```bash
-git clone [https://github.com/pokefanchanti/VendorConnect.git](https://github.com/pokefanchanti/VendorConnect.git)
-cd VendorConnect
-```
-
-### 2. Install Dependencies
-Backend
-```bash
-cd backend
-npm install
-```
-
-
-Frontend
-```bash
-cd frontend
-npm install
-```
-
-### 3. Environment Variables
-backend/.env
-```bash
-PORT=5000
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-JWT_EXPIRES_IN=7d
-NODE_ENV=development
-```
-
-frontend/.env
-```bash
-VITE_API_URL=http://localhost:5000
-```
-
-## 4. Run App
-Backend
-```bash
-cd backend
-npm run dev
-```
-
-
-Frontend
-```bash
-cd frontend
-npm run dev
-```
----
 
 ## Architecture
 Frontend : React + Vite
